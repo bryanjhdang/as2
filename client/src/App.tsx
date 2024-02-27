@@ -4,17 +4,26 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
-
-import { useForm } from '@mantine/form';
-import { Text, Title, TextInput, Button, Group, Box, Divider } from '@mantine/core';
+import { useLocalStorage, useDisclosure } from '@mantine/hooks';
+import { isNotEmpty, useForm } from '@mantine/form';
+import { Text, Title, TextInput, Anchor, Modal, Button, Group, Box, Divider } from '@mantine/core';
 import { randomId } from '@mantine/hooks';
 
 function App() {
+  const [recipeName, setRecipeName] = useLocalStorage<>({key: 'recipe'}); 
+
+  const [opened, { open, close }] = useDisclosure(false);
+
   const form = useForm({
     initialValues: {
       name: '',
       ingredients: '',
       directions: '',
+    },
+    validate: {
+      name: isNotEmpty('Recipe is required'),
+      ingredients: isNotEmpty("Ingredients are required"),
+      directions: isNotEmpty("Directions are required"),
     },
   });
 
@@ -23,25 +32,22 @@ function App() {
 
       <Box mt="3rem" maw={600} mx="auto">
         <Title order={1}>Recipe App</Title>
-        
+
+        {/* This should be in a component */}
         <Box mt="2rem" maw={500} mx="auto">
           <Title order={3}>New Recipe</Title>
 
-          <TextInput mt="md" label="Recipe Name" placeholder="Recipe Name" {...form.getInputProps('name')} />
-          <TextInput mt="md" label="Ingredients" placeholder="Ingredients" {...form.getInputProps('ingredients')} />
-          <TextInput mt="md" label="Directions" placeholder="Directions" {...form.getInputProps('directions')} />
+          <TextInput mt="md" withAsterisk label="Recipe Name" placeholder="Recipe Name" {...form.getInputProps('name')} />
+          <TextInput mt="md" withAsterisk label="Ingredients" placeholder="Ingredients" {...form.getInputProps('ingredients')} />
+          <TextInput mt="md" withAsterisk label="Directions" placeholder="Directions" {...form.getInputProps('directions')} />
 
           <Group justify="left" mt="md">
-            <Button onClick={() => form.reset()}>
-              Clear
+            <Button color="gray" onClick={() => form.reset()}>
+              Reset
             </Button>
             <Button
               onClick={() =>
-                form.setValues({
-                  name: randomId(),
-                  ingredients: randomId(),
-                  directions: randomId(),
-                })
+                form.validate()
               }
             >
               Submit
@@ -51,14 +57,32 @@ function App() {
 
         <Divider my="md"></Divider>
 
+        {/* This should be in a component */}
         <Box mt="2rem" maw={500} mx="auto">
+    
           <Title order={3}>Saved Recipes</Title>
-          <Group justify="left" mt="md">
-            <Text>Looks like there are no recipes!</Text>
-          </Group>
-        </Box>
-      </Box>
 
+            {/* This should be in a component */}
+            <Modal opened={opened} onClose={close} title="Recipe Name" centered>
+              <Title order={5}>Ingredients</Title>
+              <Text>Ingredients go here...</Text>
+              
+              <Divider my="md"></Divider>
+              
+              <Title order={5}>Directions</Title>
+              <Text>Directions go here...</Text>
+
+              <Group justify="left" mt="md">
+                <Button color="red">Delete</Button>
+                <Button>Edit</Button>
+              </Group>
+            </Modal>
+
+            {/* This should be auto generated from localStorage (or from the PostgreSQL db) */}
+            <Text mt="xs"><Anchor onClick={open}>Recipe One</Anchor></Text>
+            <Text mt="xs"><Anchor onClick={open}>Recipe Two</Anchor></Text>            
+        </Box>      
+      </Box>
     </MantineProvider>
   )
 }
