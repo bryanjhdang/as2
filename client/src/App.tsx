@@ -10,7 +10,7 @@ import { Text, Title, TextInput, Anchor, Modal, Button, Group, Box, Divider } fr
 import { randomId } from '@mantine/hooks';
 
 function App() {
-  const [recipeName, setRecipeName] = useLocalStorage<>({key: 'recipe'}); 
+  // const [recipeName, setRecipeName] = useLocalStorage<>({key: 'recipe'}); 
 
   const [opened, { open, close }] = useDisclosure(false);
 
