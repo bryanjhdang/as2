@@ -21,71 +21,51 @@ function AccordionControl(props: AccordionControlProps) {
 }
 
 function EditRecipe() {
-
-
   alert("edit");
   // open a modal and fill it with the details from the recipe that was clicked
+  // recipes list
+  // i need all of the information here
+  // i could just get the id, and then it'd be a simple GET request, and save wwould be another POST request
 }
 
 function DeleteRecipe() {
   alert("delete");
+  // i just need the id here
   // make the api call to delete
   // refresh the recipes list
 }
 
 export default function Recipes() {
   const dummyItems = [
-    { value: 'Item 1', emoji: '🍎', description: 'Description for Item 1' },
-    { value: 'Item 2', emoji: '🍌', description: 'Description for Item 2' },
-    { value: 'Item 3', emoji: '🍇', description: 'Description for Item 3' },
+    { id: 123, value: 'Item 1', date: '3/8/2024, 12:08:46 PM', ingredients: 'Ingredients for Item 1', directions: 'Directions for Item 1' },
+    { id: 325, value: 'Item 2', date: '1/31/2020, 05:41:35 AM', ingredients: 'Ingredients for Item 2', directions: 'Directions for Item 2' },
+    { id: 355, value: 'Item 3', date: '8/04/1997, 10:28:23 AM', ingredients: 'Ingredients for Item 3', directions: 'Directions for Item 3' },
   ];
 
-  // Map through the dummy data to generate Accordion items
+  // Map through the dummy data to generate Accordion items - need to change this to grab from the API
   const items = dummyItems.map((item) => (
-    <Accordion.Item key={item.value} value={item.value}>
-      <Accordion.Control icon={item.emoji}>{item.value}</Accordion.Control>
-      <Accordion.Panel>{item.description}</Accordion.Panel>
+    <Accordion.Item key={item.id} value={item.value}>
+      <AccordionControl>{item.value}</AccordionControl>
+      <Accordion.Panel>
+        <Text c='gray' pb="10">Last Modified: {item.date}</Text>
+        <Box pb="10">
+          <Text fw={700}>Ingredients</Text>
+          <Text>{item.ingredients}</Text>
+        </Box>
+        <Box pb="10">
+          <Text fw={700}>Directions</Text>
+          <Text>{item.directions}</Text>
+        </Box>
+      </Accordion.Panel>
     </Accordion.Item>
   ));
 
   return (
-    <div>
-      <Box m="1rem">
-        <Title order={3} pb="15">Saved Recipes</Title>
-
-        {/* <Accordion variant="separated" defaultValue={"Test"}> */}
-        {/* {items} */}
-        {/* </Accordion> */}
-
-        <Accordion variant="separated" chevronPosition="left">
-          <Accordion.Item value="item-1">
-            <AccordionControl>Recipe 1</AccordionControl>
-            <Accordion.Panel>
-              <Text color='gray' pb="10">Date: 4/15/2023</Text>
-
-              <Box pb="10">
-                <Title order={5}>Ingredients</Title>
-                <Text>Ingredients...</Text>
-              </Box>
-
-              <Box pb="10">
-                <Title order={5}>Directions</Title>
-                <Text>Directions...</Text>
-              </Box>
-            </Accordion.Panel>
-          </Accordion.Item>
-
-          <Accordion.Item value="item-2">
-            <AccordionControl>Recipe 2</AccordionControl>
-            <Accordion.Panel>Description 2</Accordion.Panel>
-          </Accordion.Item>
-
-          <Accordion.Item value="item-3">
-            <AccordionControl>Recipe 3</AccordionControl>
-            <Accordion.Panel>Description 3</Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-      </Box>
-    </div>
+    <Box m="1rem">
+      <Title order={3} pb="15">Saved Recipes</Title>
+      <Accordion variant="separated" chevronPosition="left">
+        {items}
+      </Accordion>       
+    </Box>
   )
 }

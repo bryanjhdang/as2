@@ -22,14 +22,14 @@ app.get('/', async(req, res) => {
   res.send('success')
 })
 
-app.post('/users', async(req, res) => {
+app.post('/recipes', async(req, res) => {
   const { name, age } = req.body
   const response = await pool.query('INSERT INTO users (name, email) VALUES ($1, $2)', [name, age])
   res.send('success')
 })
 
-app.get('/users', async(req, res) => {
-  const response = await pool.query('SELECT * FROM users')
+app.get('/recipes', async(req, res) => {
+  const response = await pool.query('SELECT * FROM recipes')
   res.send(response.rows)
 })
 
