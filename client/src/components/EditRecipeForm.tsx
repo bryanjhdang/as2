@@ -1,7 +1,6 @@
-import { useState } from 'react';
+// import { useState } from 'react';
 import { isNotEmpty, useForm } from '@mantine/form';
 import { Textarea, TextInput, Button, Group, Box } from '@mantine/core';
-import { v4 as uuidv4 } from 'uuid'
 import axios from "axios";
 
 interface FormData {
@@ -12,7 +11,6 @@ interface FormData {
 
 function handleOnSubmit(formData: FormData) {
   const recipeData = {
-    id: uuidv4(),
     timeLastModified: new Date().toLocaleString(),
     recipeName: formData.name,
     recipeIngredients: formData.ingredients,

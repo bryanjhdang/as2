@@ -1,12 +1,29 @@
 import { useState, useEffect } from 'react';
-import { Text, Title, Modal, Box, Accordion, ActionIcon, AccordionControlProps, Center, Tooltip } from '@mantine/core';
+import { Text, Title, Modal, Box, Accordion, ActionIcon, Center, Tooltip } from '@mantine/core';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 import axios from 'axios';
 import { useDisclosure } from '@mantine/hooks';
 import EditRecipeForm from './EditRecipeForm';
 
-function AccordionControl(props: AccordionControlProps) {
+interface Ingredient {
+  _id: string
+  name: string
+}
+
+interface Recipe {
+  _id: string
+  name: string
+  lastModified: Date
+  directions: string
+  ingredients: Ingredient[]
+}
+
+function AccordionControl({ recipe, onDelete }: { recipe: Recipe; onDelete: (id: string) => void }) {
   const [opened, { open, close }] = useDisclosure(false);
+
+  const handleDeleteClick = () => {
+    onDelete(recipe._id)
+  }
 
   return (
     <>
@@ -15,14 +32,16 @@ function AccordionControl(props: AccordionControlProps) {
       </Modal>
 
       <Center>
-        <Accordion.Control {...props} />
+        <Accordion.Control>
+          <Text>{recipe.name}</Text>
+        </Accordion.Control>
         <Tooltip label="Edit">
           <ActionIcon onClick={open} size="lg" variant="subtle" color="gray" mr="5">
             <IconEdit size="1rem" />
           </ActionIcon>
         </Tooltip>
         <Tooltip label="Delete">
-          <ActionIcon onClick={DeleteRecipe} size="lg" variant="subtle" color="gray" mr="10">
+          <ActionIcon onClick={handleDeleteClick} size="lg" variant="subtle" color="gray" mr="10">
             <IconTrash size="1rem" />
           </ActionIcon>
         </Tooltip>
@@ -31,54 +50,45 @@ function AccordionControl(props: AccordionControlProps) {
   );
 }
 
-function EditRecipe() {
-
-  alert("edit");
-  // open a modal and fill it with the details from the recipe that was clicked
-  // recipes list
-  // i need all of the information here
-  // i could just get the id, and then it'd be a simple GET request, and save wwould be another POST request
-}
-
-function DeleteRecipe() {
-  alert("delete");
-  // i just need the id here
-  // make the api call to delete
-  // refresh the recipes list
-}
-
 export default function Recipes() {
-  const [recipes, setRecipes] = useState([]);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
 
   useEffect(() => {
-    axios.get('https://localhost:8080/recipes')
+    axios.get<Recipe[]>('http://localhost:3000/recipes')
       .then(response => {
-        setRecipes(response.data)
+        const updatedRecipes = response.data.map(recipe => ({
+          ...recipe,
+          lastModified: new Date(recipe.lastModified)
+        }));
+        setRecipes(updatedRecipes)
       })
       .catch((error) => {
         console.log("Error:", error)
       })
-  })
+  }, []);
 
-  const dummyItems = [
-    { id: 123, value: 'Item 1', date: '3/8/2024, 12:08:46 PM', ingredients: 'Ingredients for Item 1', directions: 'Directions for Item 1' },
-    { id: 325, value: 'Item 2', date: '1/31/2020, 05:41:35 AM', ingredients: 'Ingredients for Item 2', directions: 'Directions for Item 2' },
-    { id: 355, value: 'Item 3', date: '8/04/1997, 10:28:23 AM', ingredients: 'Ingredients for Item 3', directions: 'Directions for Item 3' },
-  ];
+  const handleDeleteRecipe = (id: string) => {
+    axios.delete(`http://localhost:3000/recipes/${id}`)
+      .then(() => {
+        setRecipes(prevRecipes => prevRecipes.filter(recipe => recipe._id !== id))
+      })
+      .catch((error) => {
+        console.log("Error:", error);
+      })
+  }
 
-  // Map through the dummy data to generate Accordion items - need to change this to grab from the API
-  const items = dummyItems.map((item) => (
-    <Accordion.Item key={item.id} value={item.value}>
-      <AccordionControl>{item.value}</AccordionControl>
+  const items = recipes.map((recipe) => (
+    <Accordion.Item key={recipe._id} value={recipe.name}>
+      <AccordionControl recipe={recipe} onDelete={handleDeleteRecipe} />
       <Accordion.Panel>
-        <Text c='gray' pb="10">Last Modified: {item.date}</Text>
+        <Text c='gray' pb="10">Last Modified: {recipe.lastModified.toLocaleString()}</Text>
         <Box pb="10">
           <Text fw={700}>Ingredients</Text>
-          <Text>{item.ingredients}</Text>
+          <Text>{recipe.ingredients.map(ingredient => ingredient.name).join(', ')}</Text>
         </Box>
         <Box pb="10">
           <Text fw={700}>Directions</Text>
-          <Text>{item.directions}</Text>
+          <Text>{recipe.directions}</Text>
         </Box>
       </Accordion.Panel>
     </Accordion.Item>
