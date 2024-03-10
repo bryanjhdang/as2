@@ -1,26 +1,38 @@
-import { Text, Title, Anchor, Modal, Box, Divider, Accordion, ActionIcon, AccordionControlProps, Center, Tooltip } from '@mantine/core';
+import { useState, useEffect } from 'react';
+import { Text, Title, Modal, Box, Accordion, ActionIcon, AccordionControlProps, Center, Tooltip } from '@mantine/core';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
+import axios from 'axios';
 import { useDisclosure } from '@mantine/hooks';
+import EditRecipeForm from './EditRecipeForm';
 
 function AccordionControl(props: AccordionControlProps) {
+  const [opened, { open, close }] = useDisclosure(false);
+
   return (
-    <Center>
-      <Accordion.Control {...props} />
-      <Tooltip label="Edit">
-        <ActionIcon onClick={EditRecipe} size="lg" variant="subtle" color="gray" mr="5">
-          <IconEdit size="1rem" />
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="Delete">
-        <ActionIcon onClick={DeleteRecipe} size="lg" variant="subtle" color="gray" mr="10">
-          <IconTrash size="1rem" />
-        </ActionIcon>
-      </Tooltip>
-    </Center>
+    <>
+      <Modal opened={opened} onClose={close} title="Edit Recipe" centered>
+        <EditRecipeForm></EditRecipeForm>
+      </Modal>
+
+      <Center>
+        <Accordion.Control {...props} />
+        <Tooltip label="Edit">
+          <ActionIcon onClick={open} size="lg" variant="subtle" color="gray" mr="5">
+            <IconEdit size="1rem" />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Delete">
+          <ActionIcon onClick={DeleteRecipe} size="lg" variant="subtle" color="gray" mr="10">
+            <IconTrash size="1rem" />
+          </ActionIcon>
+        </Tooltip>
+      </Center>
+    </>
   );
 }
 
 function EditRecipe() {
+
   alert("edit");
   // open a modal and fill it with the details from the recipe that was clicked
   // recipes list
@@ -36,6 +48,18 @@ function DeleteRecipe() {
 }
 
 export default function Recipes() {
+  const [recipes, setRecipes] = useState([]);
+
+  useEffect(() => {
+    axios.get('https://localhost:8080/recipes')
+      .then(response => {
+        setRecipes(response.data)
+      })
+      .catch((error) => {
+        console.log("Error:", error)
+      })
+  })
+
   const dummyItems = [
     { id: 123, value: 'Item 1', date: '3/8/2024, 12:08:46 PM', ingredients: 'Ingredients for Item 1', directions: 'Directions for Item 1' },
     { id: 325, value: 'Item 2', date: '1/31/2020, 05:41:35 AM', ingredients: 'Ingredients for Item 2', directions: 'Directions for Item 2' },
@@ -65,7 +89,7 @@ export default function Recipes() {
       <Title order={3} pb="15">Saved Recipes</Title>
       <Accordion variant="separated" chevronPosition="left">
         {items}
-      </Accordion>       
+      </Accordion>
     </Box>
   )
 }

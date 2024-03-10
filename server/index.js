@@ -17,19 +17,19 @@ const port = 8080
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-app.get('/', async(req, res) => {
-  await pool.query('CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY key, name VARCHAR(255), age INT)')
-  res.send('success')
+app.get('/', async (req, res) => {
+  await pool.query('CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(255), age INT)')
+  res.send('Success!')
 })
 
-app.post('/recipes', async(req, res) => {
+app.post('/users', async (req, res) => {
   const { name, age } = req.body
-  const response = await pool.query('INSERT INTO users (name, email) VALUES ($1, $2)', [name, age])
-  res.send('success')
+  const response = await pool.query('INSERT INTO users (name, age) VALUES ($1, $2)', [name, age])
+  res.send("success")
 })
 
-app.get('/recipes', async(req, res) => {
-  const response = await pool.query('SELECT * FROM recipes')
+app.get('/users', async (req, res) => {
+  const response = await pool.query('SELECT * FROM users')
   res.send(response.rows)
 })
 

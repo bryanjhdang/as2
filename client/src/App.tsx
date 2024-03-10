@@ -2,7 +2,7 @@ import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { Box, SimpleGrid } from '@mantine/core';
 import TitleInfo from './components/TitleInfo';
-import RecipeForm from './components/RecipeForm';
+import NewRecipeForm from './components/NewRecipeForm';
 import Recipes from './components/Recipes';
 
 function App() {
@@ -11,7 +11,7 @@ function App() {
       <Box mt="3rem" maw={1000} mx="auto">
         <TitleInfo />
         <SimpleGrid cols={2}>
-          <RecipeForm />
+          <NewRecipeForm />
           <Recipes />
         </SimpleGrid>
       </Box>
