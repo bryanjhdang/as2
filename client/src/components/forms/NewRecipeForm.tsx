@@ -1,6 +1,11 @@
 import { isNotEmpty, useForm } from '@mantine/form';
-import { Title, Textarea, TextInput, Button, Group, Box } from '@mantine/core';
+import { Box, Title, Textarea, TextInput, Button, Group } from '@mantine/core';
 import axios from "axios";
+import { Recipe } from '../classes/RecipeData';
+
+interface Props {
+  setRecipes: React.Dispatch<React.SetStateAction<Recipe[]>>
+}
 
 interface FormData {
   name: string;
@@ -8,25 +13,7 @@ interface FormData {
   directions: string;
 }
 
-function handleOnSubmit(formData: FormData, form: any) {
-  const recipeData = {
-    name: formData.name,
-    lastModified: new Date().toISOString(),
-    directions: formData.directions,
-    ingredients: formData.ingredients
-  }
-
-  axios.post("http://localhost:3000/recipes", recipeData)
-    .then((response) => {
-      console.log(response.status, response.data.token)
-      form.reset()
-    })
-    .catch((error) => {
-      console.log("Error:", error)
-    })
-}
-
-export default function NewRecipeForm() {
+export default function NewRecipeForm({ setRecipes }: Props) {
   const form = useForm({
     initialValues: {
       name: '',
@@ -40,6 +27,25 @@ export default function NewRecipeForm() {
     },
   });
 
+  const handleOnSubmit = (formData: FormData, form: any) => {
+    const recipeData = {
+      name: formData.name,
+      lastModified: new Date().toLocaleString(),
+      directions: formData.directions,
+      ingredients: formData.ingredients
+    }
+
+    axios.post("http://localhost:3000/recipes", recipeData)
+      .then((response) => {
+        console.log(response.status, response.data.token)
+        setRecipes(prevRecipes => [...prevRecipes, response.data])
+        form.reset()
+      })
+      .catch((error) => {
+        console.log("Error:", error)
+      })
+  }
+
   return (
     <Box m="1rem">
       <Title order={3}>Add a New Recipe</Title>
@@ -47,7 +53,7 @@ export default function NewRecipeForm() {
         <TextInput mt="md" withAsterisk label="Recipe Name" placeholder="Apple Pie" {...form.getInputProps('name')} />
         <TextInput mt="md" withAsterisk label="Ingredients (comma-separated)" placeholder="Apple, Flour, Cinnamon" {...form.getInputProps('ingredients')} />
         <Textarea mt="md" withAsterisk autosize minRows={4} label="Directions" placeholder="1. Preheat oven to 375 F..." {...form.getInputProps('directions')} />
-        
+
         <Group justify="left" mt="md">
           <Button color="gray" onClick={() => form.reset()}>Reset</Button>
           <Button type="submit">Save</Button>

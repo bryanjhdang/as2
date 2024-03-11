@@ -1,25 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Text, Title, Modal, Box, Accordion, ActionIcon, Center, Tooltip } from '@mantine/core';
+import { Text, Title, Box, Accordion, ActionIcon, Center, Tooltip } from '@mantine/core';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 import axios from 'axios';
-import { useDisclosure } from '@mantine/hooks';
-import EditRecipeForm from './EditRecipeForm';
+import { Recipe } from './classes/RecipeData'
+import EditRecipeForm from './forms/EditRecipeForm'
 
-interface Ingredient {
-  _id: string
-  name: string
+interface Props {
+  recipes: Recipe[]
+  setRecipes: React.Dispatch<React.SetStateAction<Recipe[]>>
 }
 
-interface Recipe {
-  _id: string
-  name: string
-  lastModified: Date
-  directions: string
-  ingredients: Ingredient[]
-}
-
-function AccordionControl({ recipe, onDelete }: { recipe: Recipe; onDelete: (id: string) => void }) {
-  const [opened, { open, close }] = useDisclosure(false);
+function AccordionControl({ recipe, onEdit, onDelete }: { recipe: Recipe; onEdit: (recipe: Recipe) => void; onDelete: (id: string) => void }) {
+  const handleEditClick = () => {
+    onEdit(recipe)
+  }
 
   const handleDeleteClick = () => {
     onDelete(recipe._id)
@@ -27,16 +21,12 @@ function AccordionControl({ recipe, onDelete }: { recipe: Recipe; onDelete: (id:
 
   return (
     <>
-      <Modal opened={opened} onClose={close} title="Edit Recipe" centered>
-        <EditRecipeForm></EditRecipeForm>
-      </Modal>
-
       <Center>
         <Accordion.Control>
           <Text>{recipe.name}</Text>
         </Accordion.Control>
         <Tooltip label="Edit">
-          <ActionIcon onClick={open} size="lg" variant="subtle" color="gray" mr="5">
+          <ActionIcon onClick={handleEditClick} size="lg" variant="subtle" color="gray" mr="5">
             <IconEdit size="1rem" />
           </ActionIcon>
         </Tooltip>
@@ -50,21 +40,11 @@ function AccordionControl({ recipe, onDelete }: { recipe: Recipe; onDelete: (id:
   );
 }
 
-export default function Recipes() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+export default function RecipesDisplay({ recipes, setRecipes }: Props) {
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
   useEffect(() => {
     axios.get<Recipe[]>('http://localhost:3000/recipes')
-      .then(response => {
-        const updatedRecipes = response.data.map(recipe => ({
-          ...recipe,
-          lastModified: new Date(recipe.lastModified)
-        }));
-        setRecipes(updatedRecipes)
-      })
-      .catch((error) => {
-        console.log("Error:", error)
-      })
   }, []);
 
   const handleDeleteRecipe = (id: string) => {
@@ -77,18 +57,22 @@ export default function Recipes() {
       })
   }
 
+  const handleEditRecipe = (recipe: Recipe) => {
+    setSelectedRecipe(recipe)
+  }
+
   const items = recipes.map((recipe) => (
     <Accordion.Item key={recipe._id} value={recipe.name}>
-      <AccordionControl recipe={recipe} onDelete={handleDeleteRecipe} />
+      <AccordionControl recipe={recipe} onEdit={handleEditRecipe} onDelete={handleDeleteRecipe} />
       <Accordion.Panel>
-        <Text c='gray' pb="10">Last Modified: {recipe.lastModified.toLocaleString()}</Text>
+        <Text c='gray' pb="10">Last Modified: {recipe.lastModified}</Text>
         <Box pb="10">
           <Text fw={700}>Ingredients</Text>
           <Text>{recipe.ingredients.map(ingredient => ingredient.name).join(', ')}</Text>
         </Box>
         <Box pb="10">
           <Text fw={700}>Directions</Text>
-          <Text>{recipe.directions}</Text>
+          <Text style={{ whiteSpace: 'pre-wrap' }}>{recipe.directions}</Text>
         </Box>
       </Accordion.Panel>
     </Accordion.Item>
@@ -100,6 +84,14 @@ export default function Recipes() {
       <Accordion variant="separated" chevronPosition="left">
         {items}
       </Accordion>
+
+      {selectedRecipe && (
+        <EditRecipeForm
+          recipe={selectedRecipe}
+          setRecipes={setRecipes}
+          onClose={() => setSelectedRecipe(null)}
+        />
+      )}
     </Box>
   )
 }
